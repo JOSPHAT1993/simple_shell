@@ -41,8 +41,7 @@ void process(char *buffer)
 
 		if (execve(str[0], str, environ) == -1)
 		{
-			perror("Error creating process\n");
-			exit(1);
+			msgerr(str[0], 1);
 		}
 	}
 	else

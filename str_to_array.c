@@ -9,7 +9,7 @@
 unsigned int token_num(char *str)
 {
 	char *token_one;
-	char sep1[] = "\n\t";
+	char sep1[] = "" "'\n''\t'";
 	unsigned int i = 0;
 
 	token_one = strtok(str, sep1);
@@ -35,7 +35,7 @@ unsigned int token_num(char *str)
 char **split_token(char **split_str, char *str, unsigned int n)
 {
 	char *token_two;
-	char sep2[] = "\n\t";
+	char sep2[] = "" "'\n''\t'";
 	unsigned int j = 0;
 
 	token_two = strtok(str, sep2);
