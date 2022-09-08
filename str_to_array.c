@@ -1,107 +1,164 @@
 #include "shell.h"
+
 /**
- * token_num- main function to count num of tokens created
+ * get_array_element - gets an element of an array
+ * @array: array to be searched
+ * @element_name: name of element to be found
  *
- * @str:'String variable repr string to be handle'
- *
- * Return: int Number of tokens
+ * Return: the array element, or NULL if it is not found
  */
-unsigned int token_num(char *str)
+char *get_array_element(char **array, char *element_name)
 {
-	char *token_one;
-	char sep1[] = "" "'\n''\t'";
-	unsigned int i = 0;
-
-	token_one = strtok(str, sep1);
-
-	while (token_one)
+	while (*array != NULL)
 	{
-		token_one = strtok(NULL, sep1);
-		i++;
+		if (str_compare(*array, element_name, PREFIX) == TRUE)
+			return (*array);
+
+		array++;
 	}
-	return (i);
+
+	return (NULL);
 }
 
 /**
- * split_token-main function to split string into token
+ * make_array - makes a list from a buffer
+ * @str: the buffer
+ * @delim: character to mark the end of a list entry
+ * @if_sep: if the string has semicolons, if_sep becomes the location after the
+ * semicolon
  *
- * @split_str:'String variable'
- * @str:'String variable'
- * @n:'Number of token'
- *
- * Return:string tokens
+ * Return: a pointer to the list
  */
-
-char **split_token(char **split_str, char *str, unsigned int n)
+char **make_array(char *str, char delim, char **if_sep)
 {
-	char *token_two;
-	char sep2[] = "" "'\n''\t'";
-	unsigned int j = 0;
+	char *str_ptr = str;
+	unsigned int i = 2;
+	char **array = NULL;
 
-	token_two = strtok(str, sep2);
-
-	while (j < n)
+	while (*str_ptr != '\0')
 	{
-		split_str[j] = _strdup(token_two);
+		if (*str_ptr == ';')
+			break;
+		if (*str_ptr == delim && *(str_ptr + 1) != '\0')
+			i++;
 
-		if (split_str[j] == NULL)
+		str_ptr++;
+	}
+
+	array = malloc(i * sizeof(char **));
+	if (array == NULL)
+		exit(EXIT_FAILURE);
+
+	array[0] = str;
+	str_ptr = str;
+	i = 1;
+
+	while (*str_ptr != '\0')
+	{
+		if (*str_ptr == delim)
 		{
-			while (j > 0)
+			*str_ptr = '\0';
+			str_ptr++;
+			if (*str_ptr == ';')
 			{
-				free(split_str[j]);
-				j--;
+				array[i] = NULL;
+				if (*(str_ptr + 1) != '\0' && *(str_ptr + 2) != '\0')
+					*if_sep = str_ptr + 2;
+				break;
 			}
-			free(split_str[0]);
-			free(split_str);
-			free(str);
-			msgerr("Error in spliting tokens", 1);
+			if (*str_ptr != '\0')
+			{
+				array[i] = str_ptr;
+				i++;
+			}
 		}
-		token_two = strtok(NULL, sep2);
-		j++;
+		str_ptr++;
 	}
-	split_str[j] = '\0';
+	array[i] = NULL;
 
-	return (split_str);
+	return (array);
 }
+
 /**
- * str_to_arrays-function to convert token to arrays
+ * list_len - finds the length of a list, or the index of an entry
+ * @list: list to be evaluated
+ * @entry: entry to be indexed
  *
- * @buffer_size:'Integer variable'
- *
- * Return:Arrays of tokens
+ * Return: length or index if success, -1 if failure
  */
-char **str_to_arrays(char *buffer_size)
+int list_len(char **list, char *entry)
 {
-	char *aux_len, *aux_split;
-	char **splt_str;
-	unsigned int i;
+	int i = 0;
 
-	aux_len = _strdup(buffer_size);
-
-	if (aux_len == NULL)
+	if (entry == NULL)
 	{
-		msgerr("Error in allocating memmroy", 1);
+		while (*list != NULL)
+		{
+			i++;
+			list++;
+		}
+		i++;
+		return (i);
+	}
+	else
+	{
+		while (*list != NULL)
+		{
+			if (str_compare(*list, entry, PREFIX) == TRUE)
+				return (i);
+
+			i++;
+			list++;
+		}
 	}
 
-	aux_split = _strdup(buffer_size);
-	if (aux_split == NULL)
-	{
-		free(aux_len);
-		msgerr("Error in allocating memmroy", 1);
-	}
-	i = token_num(aux_len);
-	aux_len = '\0';
-	free(aux_len);
-	splt_str = malloc((i * sizeof(char *)) + 1);
-	if (splt_str == NULL)
-	{
-		free(aux_split);
-		msgerr("Error in allocating memmroy", 1);
-	}
-	splt_str = split_token(splt_str, aux_split, i);
-	aux_split = '\0';
-	free(aux_split);
+	return (-1);
+}
 
-	return (splt_str);
+/**
+ * array_cpy - copies an array
+ * @old_array: array to be copied
+ * @new_size: size of new array
+ *
+ * Return: the new array
+ */
+char **array_cpy(char **old_array, int new_size)
+{
+	char **new_array = NULL;
+	char **ptr_array;
+
+	new_array = malloc(sizeof(char **) * new_size);
+
+	ptr_array = new_array;
+	while (*old_array != NULL)
+	{
+		*ptr_array = _strdup(*old_array);
+		ptr_array++;
+		old_array++;
+	}
+	*ptr_array = NULL;
+
+	return (new_array);
+}
+
+/**
+ * free_array - frees a two dimensional array
+ * @args: array to be freed
+ *
+ * Return: TRUE
+ */
+int free_array(char **args)
+{
+	char **ptr = args;
+
+	while (*ptr != NULL)
+	{
+		free(*ptr);
+		ptr++;
+	}
+
+	free(args);
+
+	return (TRUE);
 }
 
